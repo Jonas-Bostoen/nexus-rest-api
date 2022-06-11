@@ -9,6 +9,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 use Nexus\CORS;
+use Nexus\Request;
 use Nexus\Router;
 
 $cors = new CORS([
@@ -28,12 +29,28 @@ $router = new Router(['prefix' => '/api']);
 //   });
 // });
 
-$functionality = function ($request) {
+$functionality1 = function (Request $request) {
   return json_encode(['status' => 'ok']);
 };
 
+$functionality2 = function (Request $request) {
+  return json_encode(['status' => 'ok']);
+};
+
+$router->get("test/peepee/", function (Request $request, $next) {
+  echo 'test';
+  $next();
+}, $functionality1);
+$router->get("/test2", $functionality2);
+
+
 $router->group(
   ['prefix' => '/health'],
-  $router->get("/test", $functionality),
-  $router->get("/test2", $functionality)
+  $router->get('/ping', function ($request) {
+    return json_encode(['status' => 'ok']);
+  })
 );
+
+// $router->group(
+//   ['prefix' => '/health'],
+// );

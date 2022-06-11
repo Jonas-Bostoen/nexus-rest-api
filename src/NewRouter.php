@@ -1,6 +1,9 @@
 <?php
 
 namespace Nexus;
+
+use Closure;
+
 // Json header
 header('Content-Type: application/json');
 // Include request class
@@ -30,41 +33,51 @@ class Router
   }
 
   // Formats a route
-  // private function formatRoute($route)
-  // {
-  //   $result = rtrim($route, '/');
-  //   if ($result === '') return '/';
-  //   return $result;
-  // }
-
-  function __call($name, $arguments)
+  private function formatRoute($route)
   {
-    $middleWare = [];
-    $route = '';
-    $method = null;
+    $result = rtrim($route, '/');
+    if ($result === '') return '/';
+    return $result;
+  }
 
-    print_r($arguments);
+  public function group()
+  {
+    // echo "test";
+  }
 
-    foreach ($arguments as $key => $param) {
-      // print_r($param);
+  public function __call($request_method, $arguments)
+  {
+    var_dump($arguments);
+    $request_name = '';
+    $request_function = null;
+    $request_middleware = [];
 
-      // if ($key === 0) {
-      //   $route = $param;
-      // } elseif ($key === 1) {
-      //   $method = $param;
-      // } else {
-      //   array_push($middleWare, $param);
-      // }
-
-
+    foreach ($arguments as $key => $value) {
+      if (gettype($value) === 'string') {
+        $request_name = $value;
+        // removes fist slash
+        if ($request_name[0] === '/') {
+          $request_name = substr($request_name, 1);
+        }
+        // removes last slash
+        if ($request_name[strlen($request_name) - 1] === '/') {
+          $request_name = substr($request_name, 0, strlen($request_name) - 1);
+        }
+      } else {
+        $reflection = new \ReflectionFunction($value);
+        if (sizeof($reflection->getParameters()) === 1) {
+          $request_function = $value;
+        } else {
+          array_push($request_middleware, $value);
+        }
+      }
     }
 
-    // if ($this->options !== null && $this->prefix) {
-    // $route = "{$this->prefix}{$route}";
-    // }
-    // $this->{strtolower($name)}[$this->formatRoute($route)] = [$method, $middleWare];
-    $this->{strtolower($name)}[$route] = "test";
+    if ($this->options !== null && $this->prefix) {
+      $request_name = "{$this->prefix}/{$request_name}";
+    }
+    $this->{strtolower($request_method)}[$this->formatRoute($request_name)] = [$request_function, $request_middleware];
 
-    return [$name, $arguments];
+    // print_r($this);
   }
 }

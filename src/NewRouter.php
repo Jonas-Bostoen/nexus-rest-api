@@ -22,7 +22,10 @@ class Router
     $this->routerInit($options);
   }
 
-  // Initializes the router
+  /**
+   * Initializes the router and sets the options
+   * @param $options
+   */
   private function routerInit($options)
   {
     if ($options === null) return;
@@ -32,7 +35,10 @@ class Router
     }
   }
 
-  // Formats a route
+  /**
+   * Resolves a route
+   * @param $route
+   */
   private function formatRoute($route)
   {
     $result = rtrim($route, '/');
@@ -40,14 +46,45 @@ class Router
     return $result;
   }
 
-  public function group()
+  /**
+   * Groups routes with a specified prefix
+   * @param $options
+   * @param $requests
+   */
+  public function group($options, ...$requests)
   {
-    // echo "test";
+
+    $prefix = $options['prefix'];
+    // removes fist slash
+    if ($prefix[0] === '/') {
+      $request_name = substr($prefix, 1);
+    }
+    // removes last slash
+    if ($prefix[strlen($prefix) - 1] === '/') {
+      $prefix = substr($prefix, 0, strlen($prefix) - 1);
+    }
+
+    foreach ($requests as $request) {
+      // New request name
+      if ($this->options !== null && $this->options['prefix'] !== null) {
+        $request_name = explode($this->options['prefix'], $request[1]);
+        $request_name = "{$this->options['prefix']}{$prefix}{$request_name[1]}";
+      } else {
+        $request_name = "{$prefix}/{$request[1]}";
+      }
+
+      $this->{"$request[0]"}[$request_name] = $this->{"$request[0]"}[$request[1]];
+      unset($this->{"$request[0]"}[$request[1]]);
+    }
   }
 
+  /**
+   * Saves the routes in the router
+   * @param $request_method
+   * @param $arguments
+   */
   public function __call($request_method, $arguments)
   {
-    var_dump($arguments);
     $request_name = '';
     $request_function = null;
     $request_middleware = [];
@@ -77,7 +114,76 @@ class Router
       $request_name = "{$this->prefix}/{$request_name}";
     }
     $this->{strtolower($request_method)}[$this->formatRoute($request_name)] = [$request_function, $request_middleware];
+    return [strtolower($request_method), $this->formatRoute($request_name)];
+  }
 
-    // print_r($this);
+  /**
+   * Executes the function and middleware for the current url 
+   */
+  public function resolve()
+  {
+    $methodDictionary = $this->{strtolower($this->request->requestMethod)};
+    $formattedRoute = $this->formatRoute($this->request->requestUri);
+    $method = null;
+    $params = [];
+
+    foreach ($methodDictionary as $key => $value) {
+      if ($formattedRoute === $key) {
+        $method = $value[0];
+        $this->request->setMiddleware($value[1]);
+      } else {
+        $path_array = explode('/', $key);
+        $route_array = explode('/', $formattedRoute);
+
+        if (sizeof($path_array) === sizeof($route_array)) {
+          $path = [];
+          for ($x = 0; $x < sizeof($path_array); $x++) {
+            // Guard clause
+            if (($path_array[$x] !== $route_array[$x]) && !str_starts_with($path_array[$x], ':')) {
+              break;
+            }
+            // Sets the params in the route
+            if (str_starts_with($path_array[$x], ':')) {
+              if ($path_array[$x] !== null) {
+                $params[substr($path_array[$x], 1)] = $route_array[$x];
+              }
+            }
+            array_push($path, $path_array[$x]);
+          }
+          if ($path === $path_array) {
+            $method = $value[0];
+            $this->request->setMiddleware($value[1]);
+          }
+        }
+      }
+    }
+
+    if (is_null($method)) {
+      $this->failedRequest();
+      return;
+    }
+
+    try {
+      $this->request->executeMiddleware();
+      $this->request->calcExecTime();
+      echo json_encode(call_user_func_array($method, array($this->request)));
+    } catch (\Exception $e) {
+      $this->failedRequest();
+    }
+  }
+
+  private function failedRequest()
+  {
+    header("{$this->request->serverProtocol} 404 Not Found");
+    $message = [
+      'code' => 'NOT_FOUND',
+      'message' => "Unknown resource: {$this->formatRoute($this->request->requestUri)}"
+    ];
+    echo json_encode($message);
+  }
+
+  function __destruct()
+  {
+    $this->resolve();
   }
 }

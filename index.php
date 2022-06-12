@@ -25,32 +25,31 @@ $router = new Router(['prefix' => '/api']);
 
 //   // Get request
 //   $router->get("/ping", function ($request) {
-//     return json_encode(['status' => 'ok']);
+//     return ['status' => 'ok'];
 //   });
 // });
 
 $functionality1 = function (Request $request) {
-  return json_encode(['status' => 'ok']);
+  return ['status' => 'ok'];
 };
 
 $functionality2 = function (Request $request) {
-  return json_encode(['status' => 'ok']);
+  // throw new Exception('Error');
+  return ['status' => 'ok'];
 };
 
-$router->get("test/peepee/", function (Request $request, $next) {
-  echo 'test';
-  $next();
-}, $functionality1);
-$router->get("/test2", $functionality2);
-
-
 $router->group(
-  ['prefix' => '/health'],
+  ['prefix' => '/health', 'middleware' => $auth],
   $router->get('/ping', function ($request) {
-    return json_encode(['status' => 'ok']);
+    return ['status' => 'ok'];
+  }),
+  $router->get('/test', function ($request) {
+    return ['status' => 'ok'];
   })
 );
 
-// $router->group(
-//   ['prefix' => '/health'],
-// );
+
+$router->get("test/peepee/", function (Request $request, $next) {
+  $next();
+}, $functionality1);
+$router->get("/test2", $functionality2);

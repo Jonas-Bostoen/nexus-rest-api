@@ -1,6 +1,6 @@
 <?php
 
 $auth = function ($request, $next) {
-  // echo "test";
+  echo "test";
   $next();
 };

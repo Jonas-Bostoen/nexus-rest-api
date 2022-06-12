@@ -1,55 +1,89 @@
 <?php
 
-require_once __DIR__ . '/src/NewRouter.php';
-require_once __DIR__ . '/src/CORS.php';
 require_once __DIR__ . './middleware.php';
+require_once __DIR__ . '/src/App.php';
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-use Nexus\CORS;
 use Nexus\Request;
-use Nexus\Router;
+use Nexus\App;
 
-$cors = new CORS([
-  'allowedOrigins' => ['*'],
+$app = new App([
+  'prefix' => '/api',
+  'db_connection' => [
+    'host' => 'localhost',
+    'user' => 'root',
+    'port' => 3306,
+    'password' => 'root',
+    'database' => 'wpcn',
+  ],
+  'CORS' => [
+    'allowedOrigins' => ['*'],
+  ]
 ]);
 
-$router = new Router(['prefix' => '/api']);
-// $router->group("/health", function () use ($router) {
 
 
-
-
-
-//   // Get request
-//   $router->get("/ping", function ($request) {
-//     return ['status' => 'ok'];
-//   });
+// $app->get('/ping', function (Request $request) {
+//   return [
+//     'code' => 'OK',
+//     'message' => 'pong'
+//   ];
 // });
 
-$functionality1 = function (Request $request) {
-  return ['status' => 'ok'];
-};
+// $app->post('/blog', function (Request $request) {
+//   return $request->body();
+// });
 
-$functionality2 = function (Request $request) {
-  // throw new Exception('Error');
-  return ['status' => 'ok'];
-};
-
-$router->group(
-  ['prefix' => '/health', 'middleware' => $auth],
-  $router->get('/ping', function ($request) {
-    return ['status' => 'ok'];
-  }),
-  $router->get('/test', function ($request) {
-    return ['status' => 'ok'];
-  })
-);
+// $app->delete('/blog/:id', function (Request $request) {
+//   $param = $request->params()['id'];
+//   return $param;
+// });
 
 
-$router->get("test/peepee/", function (Request $request, $next) {
-  $next();
-}, $functionality1);
-$router->get("/test2", $functionality2);
+// $app->group(
+//   ['prefix' => '/health'],
+
+//   $app->get('/ping', function (Request $request) {
+//     return [
+//       'message' => 'pong'
+//     ];
+//   }),
+//   $app->get('/status', function (Request $request) {
+//     return [
+//       'code' => 'OK'
+//     ];
+//   })
+// );
+
+$app->get('/ping', function (Request $request) {
+  return $request;
+});
+
+
+// $functionality1 = function (Request $request) {
+//   return ['status' => 'ok'];
+// };
+
+// $functionality2 = function (Request $request) {
+//   return ['status' => 'ok'];
+// };
+
+
+// $app->group(
+//   ['prefix' => '/health'],
+//   $app->get('/ping', function (Request $request) {
+//     return ['status' => 'ok'];
+//   }),
+//   $app->get('/test', function (Request $request) {
+//     return ['status' => 'ok'];
+//   })
+// );
+
+// $router->get("test/peepee/", function (Request $request, Closure $next) {
+//   $next();
+// }, $functionality1);
+
+// $router->get("/test2", $functionality2);

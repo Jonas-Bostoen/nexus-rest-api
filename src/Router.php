@@ -2,50 +2,41 @@
 
 namespace Nexus;
 
+// Json header
 header('Content-Type: application/json');
+// Include request class
 include_once __DIR__ . '/Request.php';
 
 class Router
 {
+  // attributes
   private $request;
-  private $object;
+  private $options;
 
-  function __construct($object = null)
+  // Constructor
+  function __construct($options = null)
   {
     $this->request = new Request();
-    $this->object = $object;
-    $this->routerInit($object);
+    $this->routerInit($options);
   }
 
-  private function routerInit($object)
+  /**
+   * Initializes the router and sets the options
+   * @param $options
+   */
+  private function routerInit($options)
   {
-    if ($object === null) return;
-    foreach ($object as $key => $value) {
+    if ($options === null) return;
+    $this->options = $options;
+    foreach ($options as $key => $value) {
       $this->$key = $value;
     }
   }
 
-  function __call($name, $parameters)
-  {
-    $middleWare = [];
-    $route = '';
-    $method = null;
-    foreach ($parameters as $key => $param) {
-      if ($key === 0) {
-        $route = $param;
-      } elseif ($key === 1) {
-        $method = $param;
-      } else {
-        array_push($middleWare, $param);
-      }
-    }
-
-    if ($this->object !== null && $this->prefix) {
-      $route = "{$this->prefix}{$route}";
-    }
-    $this->{strtolower($name)}[$this->formatRoute($route)] = [$method, $middleWare];
-  }
-
+  /**
+   * Resolves a route
+   * @param $route
+   */
   private function formatRoute($route)
   {
     $result = rtrim($route, '/');
@@ -54,9 +45,79 @@ class Router
   }
 
   /**
-   * Resolves a route
+   * Groups routes with a specified prefix
+   * @param $options
+   * @param $requests
    */
-  function resolve()
+  public function group($options, ...$requests)
+  {
+    $prefix = $options['prefix'];
+    // removes fist slash
+    if ($prefix[0] === '/') {
+      $request_name = substr($prefix, 1);
+    }
+    // removes last slash2
+    if ($prefix[strlen($prefix) - 1] === '/') {
+      $prefix = substr($prefix, 0, strlen($prefix) - 1);
+    }
+
+    foreach ($requests as $request) {
+      // New request name
+      if ($this->options !== null && $this->options['prefix'] !== null) {
+        $request_name = explode($this->options['prefix'], $request[1]);
+        $request_name = "{$this->options['prefix']}{$prefix}{$request_name[1]}";
+      } else {
+        $request_name = "{$prefix}/{$request[1]}";
+      }
+
+      $this->{"$request[0]"}[$request_name] = $this->{"$request[0]"}[$request[1]];
+      unset($this->{"$request[0]"}[$request[1]]);
+    }
+  }
+
+  /**
+   * Saves the routes in the router
+   * @param $request_method
+   * @param $arguments
+   */
+  public function __call($request_method, $arguments)
+  {
+    $request_name = '';
+    $request_function = null;
+    $request_middleware = [];
+
+    foreach ($arguments as $key => $value) {
+      if (gettype($value) === 'string') {
+        $request_name = $value;
+        // removes fist slash
+        if ($request_name[0] === '/') {
+          $request_name = substr($request_name, 1);
+        }
+        // removes last slash
+        if ($request_name[strlen($request_name) - 1] === '/') {
+          $request_name = substr($request_name, 0, strlen($request_name) - 1);
+        }
+      } else {
+        $reflection = new \ReflectionFunction($value);
+        if (sizeof($reflection->getParameters()) === 1) {
+          $request_function = $value;
+        } else {
+          array_push($request_middleware, $value);
+        }
+      }
+    }
+
+    if ($this->options !== null && $this->prefix) {
+      $request_name = "{$this->prefix}/{$request_name}";
+    }
+    $this->{strtolower($request_method)}[$this->formatRoute($request_name)] = [$request_function, $request_middleware];
+    return [strtolower($request_method), $this->formatRoute($request_name)];
+  }
+
+  /**
+   * Executes the function and middleware for the current url 
+   */
+  public function resolve()
   {
     $methodDictionary = $this->{strtolower($this->request->requestMethod)};
     $formattedRoute = $this->formatRoute($this->request->requestUri);
@@ -95,20 +156,39 @@ class Router
     }
 
     if (is_null($method)) {
-      $this->failedRequest();
+      $this->requestNotFound();
       return;
     }
 
     try {
+      $this->request->setParams($params);
       $this->request->executeMiddleware();
       $this->request->calcExecTime();
       echo json_encode(call_user_func_array($method, array($this->request)));
     } catch (\Exception $e) {
-      $this->failedRequest();
+      $this->failedRequest($e);
     }
   }
 
-  private function failedRequest()
+  /**
+   * Handles a thrown exception and returns a failed request
+   * @param $e
+   */
+  private function failedRequest($exception)
+  {
+    header("{$this->request->serverProtocol} 500 Internal Server Error");
+    $message = [
+      'code' => 'INTERNAL_SERVER_ERROR',
+      'message' => $exception->getMessage(),
+      'stack' => $exception->getTraceAsString()
+    ];
+    echo json_encode($message);
+  }
+
+  /**
+   * Handles a 404 request
+   */
+  private function requestNotFound()
   {
     header("{$this->request->serverProtocol} 404 Not Found");
     $message = [

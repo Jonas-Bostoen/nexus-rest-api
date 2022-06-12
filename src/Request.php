@@ -61,15 +61,8 @@ class Request
   // Checks the requests and calls the right function to return the data
   public function body()
   {
-    switch ($this->requestMethod) {
-      case "GET":
-        return;
-        break;
-
-      case "POST":
-        return $this->POST();
-        break;
-    }
+    if ($this->requestMethod === "GET") return;
+    return $this->bodyFormat();
   }
 
   public function executeMiddleware()
@@ -87,7 +80,7 @@ class Request
     }
   }
 
-  private function POST()
+  private function bodyFormat()
   {
     return json_decode(file_get_contents("php://input"));
   }

@@ -1,8 +1,21 @@
 {
-  "scripts": {
-    "start": [
-      "Composer\\Config::disableProcessTimeout",
-      "php -S localhost:9000 -t ./"
-    ]
+  "name": "nexus/nexus-rest-api",
+  "description": "Lightweight and fast PHP framework for building RESTful APIs.",
+  "licence": "MIT",
+  "type": "framework",
+  "keywords": [
+    "framework",
+    "rest",
+    "api",
+    "php",
+    "router"
+  ],
+  "autoload": {
+    "psr-4": {
+      "Nexus\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^7.4 || ^8.0"
   }
 }

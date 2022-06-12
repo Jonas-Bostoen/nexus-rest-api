@@ -3,7 +3,6 @@
 Nexus php is a lightweight and fast PHP framework for building RESTful APIs.
 
 ## Installation
----
 
 Easy installation via Composer:
 
@@ -12,7 +11,6 @@ composer require nexus/nexus
 ```
 
 ## Getting started 
----
 
 ## APP
 

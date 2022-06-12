@@ -155,3 +155,8 @@ $app->get('/ping', $middleware, function(Request $request) {
   ];
 });
 ```
+
+## Suggested packages to use with this framework
+- firebase/php-jwt
+- symfony/dotenv
+- ramsey/uuid

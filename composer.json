@@ -1,7 +1,7 @@
 {
   "name": "nexus-rest-api/nexus",
   "description": "Lightweight and fast PHP framework for building RESTful APIs.",
-  "licence": "MIT",
+  "license": "MIT",
   "type": "framework",
   "keywords": [
     "framework",

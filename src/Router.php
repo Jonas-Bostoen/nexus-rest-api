@@ -63,7 +63,7 @@ class Router
 
     foreach ($requests as $request) {
       // New request name
-      if ($this->options !== null && $this->options['prefix'] !== null) {
+      if ($this->options !== null && key_exists('prefix', $this->options)) {
         $request_name = explode($this->options['prefix'], $request[1]);
         $request_name = "{$this->options['prefix']}{$prefix}{$request_name[1]}";
       } else {
@@ -86,16 +86,18 @@ class Router
     $request_function = null;
     $request_middleware = [];
 
-    foreach ($arguments as $key => $value) {
+    foreach ($arguments as $value) {
       if (gettype($value) === 'string') {
         $request_name = $value;
         // removes fist slash
-        if ($request_name[0] === '/') {
-          $request_name = substr($request_name, 1);
-        }
-        // removes last slash
-        if ($request_name[strlen($request_name) - 1] === '/') {
-          $request_name = substr($request_name, 0, strlen($request_name) - 1);
+        if ($request_name !== '/') {
+          if ($request_name[0] === '/') {
+            $request_name = substr($request_name, 1);
+          }
+          // removes last slash
+          if ($request_name[strlen($request_name) - 1] === '/') {
+            $request_name = substr($request_name, 0, strlen($request_name) - 1);
+          }
         }
       } else {
         $reflection = new \ReflectionFunction($value);
@@ -107,7 +109,7 @@ class Router
       }
     }
 
-    if ($this->options !== null && $this->prefix) {
+    if ($this->options !== null && key_exists('prefix', $this->options)) {
       $request_name = "{$this->prefix}/{$request_name}";
     }
     $this->{strtolower($request_method)}[$this->formatRoute($request_name)] = [$request_function, $request_middleware];

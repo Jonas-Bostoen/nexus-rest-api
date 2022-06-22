@@ -126,6 +126,13 @@ class Router
     $method = null;
     $params = [];
 
+    if ($this->request->requestMethod === "OPTIONS") {
+      if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
+        header("HTTP/1.1 200 OK");
+      }
+      return;
+    }
+
     foreach ($methodDictionary as $key => $value) {
       if ($formattedRoute === $key) {
         $method = $value[0];

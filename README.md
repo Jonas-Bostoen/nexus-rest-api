@@ -156,6 +156,18 @@ $app->get('/ping', $middleware, function(Request $request) {
 });
 ```
 
+## MODULES 
+If you want to add extra functionality to the app eg. a logger. This can be done use the append module method. This takes a key (string) and a value (object of closure). 
+
+```php
+// Appending the module
+$app::appendModule('logger', new Logger());
+
+// Accessing the appended module 
+$logger = $app:requireModule('logger');
+$logger::logAction('...');
+```
+
 ## Suggested packages to use with this framework
 - firebase/php-jwt
 - symfony/dotenv

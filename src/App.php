@@ -9,6 +9,7 @@ class App
 {
   private $router;
   private static $database = null;
+  private static $modules = [];
 
   public function __construct($options = null)
   {
@@ -49,11 +50,24 @@ class App
   }
 
   /**
-   * database
+   * Database
    */
   public static function db()
   {
     return self::$database;
+  }
+
+  /**
+   * Modules
+   */
+  public static function appendModule($key, $value)
+  {
+    self::$modules[$key] = $value;
+  }
+
+  public static function requireModule($key)
+  {
+    return self::$modules[$key];
   }
 
   /**

@@ -59,28 +59,28 @@ class App
   /**
    * Facade methods for Router
    */
-  public function get($route, $callback)
+  public function get($route, ...$callback)
   {
     if ($this->router === null) return;
-    return $this->router->get($route, $callback);
+    return $this->router->get($route, ...$callback);
   }
 
-  public function post($route, $callback)
+  public function post($route, ...$callback)
   {
     if ($this->router === null) return;
-    return $this->router->post($route, $callback);
+    return $this->router->post($route, ...$callback);
   }
 
-  public function put($route, $callback)
+  public function put($route, ...$callback)
   {
     if ($this->router === null) return;
-    return $this->router->put($route, $callback);
+    return $this->router->put($route, ...$callback);
   }
 
-  public function delete($route, $callback)
+  public function delete($route, ...$callback)
   {
     if ($this->router === null) return;
-    return $this->router->delete($route, $callback);
+    return $this->router->delete($route, ...$callback);
   }
 
   public function group($options, ...$requests)

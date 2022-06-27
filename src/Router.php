@@ -174,20 +174,23 @@ class Router
       $this->request->executeMiddleware();
       $this->request->calcExecTime();
       echo json_encode(call_user_func_array($method, array($this->request)));
+    } catch (UnauthorizedException $e) {
+      $this->unauthorizedRequest($e);
     } catch (\Exception $e) {
       $this->failedRequest($e);
     }
   }
 
-  /**
-   * Handles a thrown exception and returns a failed request
-   * @param $e
-   */
-  private function failedRequest($exception)
+  /* ===================================================================== */
+  /*                           Error handling                              */
+  /* ===================================================================== */
+
+
+  private function unauthorizedRequest($exception)
   {
-    header("{$this->request->serverProtocol} 500 Internal Server Error");
+    header("{$this->request->serverProtocol} 401 Unauthorized");
     $message = [
-      'code' => 'INTERNAL_SERVER_ERROR',
+      'code' => 'UNAUTHORIZED',
       'message' => $exception->getMessage(),
       'stack' => $exception->getTraceAsString()
     ];
@@ -203,6 +206,21 @@ class Router
     $message = [
       'code' => 'NOT_FOUND',
       'message' => "Unknown resource: {$this->formatRoute($this->request->requestUri)}"
+    ];
+    echo json_encode($message);
+  }
+
+  /**
+   * Handles a thrown exception and returns a failed request
+   * @param $e
+   */
+  private function failedRequest($exception)
+  {
+    header("{$this->request->serverProtocol} 500 Internal Server Error");
+    $message = [
+      'code' => 'INTERNAL_SERVER_ERROR',
+      'message' => $exception->getMessage(),
+      'stack' => $exception->getTraceAsString()
     ];
     echo json_encode($message);
   }

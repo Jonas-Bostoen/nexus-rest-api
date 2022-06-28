@@ -41,6 +41,17 @@ There is also a possibility to pass config to the app while creating it. The ord
   $app = new App($config);
 ```
 
+### ENVIRONMENTS
+
+The framework allows for two different environments namely `development` and `production`. The difference being that in development if there is an error the stacktrace will be shown in the response. environment is part of the config of the app
+
+```php
+<?php
+$config =[
+  "ENV" => "production"
+]
+```
+
 ## HTACCESS
 A .htaccess file is required for the router to work.
 ```htaccess
@@ -166,6 +177,31 @@ $app::appendModule('logger', new Logger());
 // Accessing the appended module 
 $logger = $app:requireModule('logger');
 $logger::logAction('...');
+```
+
+## ERROR HANDLING 
+The router has build in error handling, this framework comes with some exceptions that can be thrown throughout the application. These exceptions will be caught by the router and an error message wil be send to the end user 
+
+### Different exceptions
+| HTTP status code | Name                  | Exception                                                 |
+| ---------------- | --------------------- | --------------------------------------------------------- |
+| 400              | Bad Request           | `throw new BadRequestException(String)`                   |
+| 401              | Unauthorized          | `throw new UnauthorizedException(String)`                 |
+| 403              | Forbidden             | `throw new ForbiddenException(String)`                    |
+| 404              | Not Found             | Handled by the router                                     |
+| 413              | Payload Too Large     | `throw new PayloadTooLargeException(String)`              |
+| 429              | Too Many Requests     | `throw new TooManyRequestsException(String)`              |
+| 500              | Internal Server Error | Fallback for exceptions not in this list and other errors |
+| 501              | Not Implemented       | `throw new NotImplementedException(String)`               |
+| 502              | Bad Gateway           | `throw new BadGatewayException(String)`                   |
+
+```php
+<?php
+// Use case
+$app->get("/users", function(Request $request) {
+  if(!validateToken($request->httpAuthorization))
+    throw new UnauthorizedException("User is not logged in");
+}); 
 ```
 
 ## Suggested packages to use with this framework

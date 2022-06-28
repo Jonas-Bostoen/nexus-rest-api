@@ -1,8 +1,8 @@
 <?php
 
-namespace Nexus\exceptions;
+namespace Nexus;
 
-class UnauthorizedException extends \Exception
+class BadGatewayException extends \Exception
 {
   public function __construct($message)
   {

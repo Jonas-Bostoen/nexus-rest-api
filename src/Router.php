@@ -5,13 +5,22 @@ namespace Nexus;
 // Json header
 header('Content-Type: application/json');
 // Include request class
-include_once __DIR__ . '/Request.php';
+require_once __DIR__ . '/Request.php';
+// Includes all exceptions
+foreach (glob(__DIR__ . '/exceptions' . "/*.php") as $file) {
+  require $file;
+}
+
+use Nexus\exceptions\NotFoundException;
+use Nexus\exceptions\UnauthorizedException;
+
 
 class Router
 {
   // attributes
   private $request;
   private $options;
+  private $ENV = "development";
 
   // Constructor
   function __construct($options = null)
@@ -174,8 +183,20 @@ class Router
       $this->request->executeMiddleware();
       $this->request->calcExecTime();
       echo json_encode(call_user_func_array($method, array($this->request)));
+    } catch (BadRequestException $e) {
+      $this->failedRequest($e, 400);
     } catch (UnauthorizedException $e) {
-      $this->unauthorizedRequest($e);
+      $this->failedRequest($e, 401);
+    } catch (ForbiddenException $e) {
+      $this->failedRequest($e, 403);
+    } catch (PayloadTooLargeException $e) {
+      $this->failedRequest($e, 413);
+    } catch (TooManyRequestsException $e) {
+      $this->failedRequest($e, 429);
+    } catch (NotImplementedException $e) {
+      $this->failedRequest($e, 501);
+    } catch (BadGatewayException $e) {
+      $this->failedRequest($e, 502);
     } catch (\Exception $e) {
       $this->failedRequest($e);
     }
@@ -185,42 +206,42 @@ class Router
   /*                           Error handling                              */
   /* ===================================================================== */
 
-
-  private function unauthorizedRequest($exception)
+  private function failedRequest($exception = null, $type = 500)
   {
-    header("{$this->request->serverProtocol} 401 Unauthorized");
-    $message = [
-      'code' => 'UNAUTHORIZED',
-      'message' => $exception->getMessage(),
-      'stack' => $exception->getTraceAsString()
+    $options = [
+      400 => ["400 Bad Request", "BAD_REQUEST"],
+      401 => ["401 Unauthorized", "UNAUTHORIZED"],
+      403 => ["403 Forbidden", "FORBIDDEN"],
+      413 => ["413 Payload Too Large", "PAYLOAD_TOO_LARGE"],
+      429 => ["429 Too Many Requests", "TOO_MANY_REQUESTS"],
+      500 => ["500 Internal Server Error", "INTERNAL_SERVER_ERROR"],
+      501 => ["501 Not Implemented", "NOT_IMPLEMENTED"],
+      502 => ["502 Bad Gateway", "BAD_GATEWAY"]
     ];
+
+
+    header("{$this->request->serverProtocol} {$options[$type][0]}");
+    if ($this->ENV !== "production" && $exception !== null) {
+      $message = [
+        'code' => $options[$type][1],
+        'message' => $exception->getMessage(),
+        'stack' => $exception->getTraceAsString()
+      ];
+    } else {
+      $message = [
+        'code' => $options[$type][1],
+        'message' => $exception->getMessage(),
+      ];
+    }
     echo json_encode($message);
   }
 
-  /**
-   * Handles a 404 request
-   */
   private function requestNotFound()
   {
     header("{$this->request->serverProtocol} 404 Not Found");
     $message = [
       'code' => 'NOT_FOUND',
       'message' => "Unknown resource: {$this->formatRoute($this->request->requestUri)}"
-    ];
-    echo json_encode($message);
-  }
-
-  /**
-   * Handles a thrown exception and returns a failed request
-   * @param $e
-   */
-  private function failedRequest($exception)
-  {
-    header("{$this->request->serverProtocol} 500 Internal Server Error");
-    $message = [
-      'code' => 'INTERNAL_SERVER_ERROR',
-      'message' => $exception->getMessage(),
-      'stack' => $exception->getTraceAsString()
     ];
     echo json_encode($message);
   }

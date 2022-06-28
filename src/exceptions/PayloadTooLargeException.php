@@ -1,8 +1,8 @@
 <?php
 
-namespace Nexus\exceptions;
+namespace Nexus;
 
-class UnauthorizedException extends \Exception
+class PayloadTooLargeException extends \Exception
 {
   public function __construct($message)
   {

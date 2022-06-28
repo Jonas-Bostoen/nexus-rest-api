@@ -168,7 +168,7 @@ $app->get('/ping', $middleware, function(Request $request) {
 ```
 
 ## MODULES 
-If you want to add extra functionality to the app eg. a logger. This can be done use the append module method. This takes a key (string) and a value (object of closure). 
+If you want to add extra functionality to the app eg. a logger. This can be done use the append module method. This takes a key (string) and a value (object or closure). 
 
 ```php
 // Appending the module
@@ -180,7 +180,7 @@ $logger::logAction('...');
 ```
 
 ## ERROR HANDLING 
-The router has build in error handling, this framework comes with some exceptions that can be thrown throughout the application. These exceptions will be caught by the router and an error message wil be send to the end user 
+The router has build in error handling, this framework comes with some exceptions that can be thrown throughout the application. These exceptions will be caught by the router and an error message wil be send to the end user.
 
 ### Different exceptions
 | HTTP status code | Name                  | Exception                                                 |

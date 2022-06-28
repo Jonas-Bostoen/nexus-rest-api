@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexus\exceptions;
+namespace Nexus;
 
 class UnauthorizedException extends \Exception
 {

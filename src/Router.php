@@ -6,15 +6,6 @@ namespace Nexus;
 header('Content-Type: application/json');
 // Include request class
 require_once __DIR__ . '/Request.php';
-// Includes all exceptions
-foreach (glob(__DIR__ . '/exceptions' . "/*.php") as $file) {
-  require $file;
-}
-
-use Nexus\exceptions\NotFoundException;
-use Nexus\exceptions\UnauthorizedException;
-
-
 class Router
 {
   // attributes

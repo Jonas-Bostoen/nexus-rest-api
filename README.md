@@ -43,7 +43,7 @@ There is also a possibility to pass config to the app while creating it. The ord
 
 ### ENVIRONMENTS
 
-The framework allows for two different environments namely `development` and `production`. The difference being that in development if there is an error the stacktrace will be shown in the response. environment is part of the config of the app
+The framework allows for two different environments namely `development` and `production`. The difference being that in development if there is an error the stacktrace will be shown in the response. environment is part of the config of the app. By default development is set as the env.
 
 ```php
 <?php

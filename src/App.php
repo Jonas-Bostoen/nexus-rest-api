@@ -59,7 +59,7 @@ class App
     self::setDatabaseConnection(...self::$dbOptions);
   }
 
-  public static function dbConnectionDestroy()
+  public static function dbExit()
   {
     self::$database->close();
   }

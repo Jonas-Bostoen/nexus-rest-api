@@ -184,7 +184,7 @@ $findUser = function(App $app, String $id){
     $statement->bind_param('ss', $id);
     $statement->execute();
     $result = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
-  $app::dbDisconnect();  // Closes the connection with te database
+  $app::dbExit();  // Closes the connection with te database
   return $result;
 };
 

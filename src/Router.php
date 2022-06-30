@@ -11,7 +11,7 @@ class Router
   // attributes
   private $request;
   private $options;
-  private $ENV = "development";
+  private $ENV = 'development';
 
   // Constructor
   function __construct($options = null)
@@ -26,7 +26,7 @@ class Router
    */
   private function routerInit($options)
   {
-    if ($options === null) return;
+    if (!isset($options)) return;
     $this->options = $options;
     foreach ($options as $key => $value) {
       $this->$key = $value;
@@ -63,7 +63,7 @@ class Router
 
     foreach ($requests as $request) {
       // New request name
-      if ($this->options !== null && key_exists('prefix', $this->options)) {
+      if (isset($this->options) && key_exists('prefix', $this->options)) {
         $request_name = explode($this->options['prefix'], $request[1]);
         $request_name = "{$this->options['prefix']}{$prefix}{$request_name[1]}";
       } else {
@@ -109,7 +109,7 @@ class Router
       }
     }
 
-    if ($this->options !== null && key_exists('prefix', $this->options)) {
+    if (isset($this->options) && key_exists('prefix', $this->options)) {
       $request_name = "{$this->prefix}/{$request_name}";
     }
     $this->{strtolower($request_method)}[$this->formatRoute($request_name)] = [$request_function, $request_middleware];
@@ -126,9 +126,9 @@ class Router
     $method = null;
     $params = [];
 
-    if ($this->request->requestMethod === "OPTIONS") {
+    if ($this->request->requestMethod === 'OPTIONS') {
       if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
-        header("HTTP/1.1 200 OK");
+        header('HTTP/1.1 200 OK');
       }
       return;
     }
@@ -164,7 +164,7 @@ class Router
       }
     }
 
-    if (is_null($method)) {
+    if (!isset($method)) {
       $this->requestNotFound();
       return;
     }
@@ -200,19 +200,19 @@ class Router
   private function failedRequest($exception = null, $type = 500)
   {
     $options = [
-      400 => ["400 Bad Request", "BAD_REQUEST"],
-      401 => ["401 Unauthorized", "UNAUTHORIZED"],
-      403 => ["403 Forbidden", "FORBIDDEN"],
-      413 => ["413 Payload Too Large", "PAYLOAD_TOO_LARGE"],
-      429 => ["429 Too Many Requests", "TOO_MANY_REQUESTS"],
-      500 => ["500 Internal Server Error", "INTERNAL_SERVER_ERROR"],
-      501 => ["501 Not Implemented", "NOT_IMPLEMENTED"],
-      502 => ["502 Bad Gateway", "BAD_GATEWAY"]
+      400 => ['400 Bad Request', 'BAD_REQUEST'],
+      401 => ['401 Unauthorized', 'UNAUTHORIZED'],
+      403 => ['403 Forbidden', 'FORBIDDEN'],
+      413 => ['413 Payload Too Large', 'PAYLOAD_TOO_LARGE'],
+      429 => ['429 Too Many Requests', 'TOO_MANY_REQUESTS'],
+      500 => ['500 Internal Server Error', 'INTERNAL_SERVER_ERROR'],
+      501 => ['501 Not Implemented', 'NOT_IMPLEMENTED'],
+      502 => ['502 Bad Gateway', 'BAD_GATEWAY']
     ];
 
 
     header("{$this->request->serverProtocol} {$options[$type][0]}");
-    if ($this->ENV !== "production" && $exception !== null) {
+    if ($this->ENV !== 'production' && isset($exception)) {
       $message = [
         'code' => $options[$type][1],
         'message' => $exception->getMessage(),

@@ -61,7 +61,7 @@ class Request
   // Checks the requests and calls the right function to return the data
   public function body()
   {
-    if ($this->requestMethod === "GET") return;
+    if ($this->requestMethod === 'GET') return;
     return $this->bodyFormat();
   }
 
@@ -82,6 +82,6 @@ class Request
 
   private function bodyFormat()
   {
-    return json_decode(file_get_contents("php://input"));
+    return json_decode(file_get_contents('php://input'));
   }
 }

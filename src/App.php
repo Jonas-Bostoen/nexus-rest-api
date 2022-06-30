@@ -10,6 +10,7 @@ class App
   private $router;
   private static $database = null;
   private static $modules = [];
+  private static $dbOptions;
 
   public function __construct($options = null)
   {
@@ -22,7 +23,7 @@ class App
     if (key_exists('db_connection', $options)) {
       try {
         $database_connection =  $options['db_connection'];
-        $this->setDatabaseConnection(...$database_connection);
+        self::$dbOptions = $database_connection;
         unset($options['db_connection']);
       } catch (\Exception $exception) {
         echo json_encode([
@@ -41,17 +42,28 @@ class App
     $this->router = new Router($options);
   }
 
-  private function setDatabaseConnection($host, $user, $password, $database, $port = 3306)
+  private static function setDatabaseConnection($host, $user, $password, $database, $port = 3306)
   {
     self::$database = new \mysqli($host, $user, $password, $database, $port);
     if (self::$database->connect_errno) {
-      throw new \Exception("Failed to connect to MySQL: " . self::$database->connect_error);
+      throw new \Exception('Failed to connect to MySQL: ' . self::$database->connect_error);
     }
   }
 
   /**
    * Database
    */
+
+  public static function dbConnect()
+  {
+    self::setDatabaseConnection(...self::$dbOptions);
+  }
+
+  public static function dbConnectionDestroy()
+  {
+    self::$database->close();
+  }
+
   public static function db()
   {
     return self::$database;
@@ -75,31 +87,31 @@ class App
    */
   public function get($route, ...$callback)
   {
-    if ($this->router === null) return;
+    if (!isset($this->router)) return;
     return $this->router->get($route, ...$callback);
   }
 
   public function post($route, ...$callback)
   {
-    if ($this->router === null) return;
+    if (!isset($this->router)) return;
     return $this->router->post($route, ...$callback);
   }
 
   public function put($route, ...$callback)
   {
-    if ($this->router === null) return;
+    if (!isset($this->router)) return;
     return $this->router->put($route, ...$callback);
   }
 
   public function delete($route, ...$callback)
   {
-    if ($this->router === null) return;
+    if (!isset($this->router)) return;
     return $this->router->delete($route, ...$callback);
   }
 
   public function group($options, ...$requests)
   {
-    if ($this->router === null) return;
+    if (!isset($this->router)) return;
     return $this->router->group($options, ...$requests);
   }
 }

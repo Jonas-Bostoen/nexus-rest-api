@@ -167,6 +167,29 @@ $app->get('/ping', $middleware, function(Request $request) {
 });
 ```
 
+## DATABASE CONNECTION 
+in the config of the app, you can configure the database for the app to use. The app allows you to open and close the connection on demand with the functions `dbConnect()` and `dbDisconnect()`. The example below uses a prepared statement to combat sql injections. A normal statement can also be used.
+
+```php
+<?php
+
+$findUser = function(App $app, String $id){
+  $app::dbConnect();     // Opens the connection with the database
+    // Prepared statement
+    $statement = $app()::db()->prepare(
+      'SELECT * 
+       FROM user 
+       WHERE id = ?' 
+    );
+    $statement->bind_param('ss', $id);
+    $statement->execute();
+    $result = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+  $app::dbDisconnect();  // Closes the connection with te database
+  return $result;
+};
+
+```
+
 ## MODULES 
 If you want to add extra functionality to the app eg. a logger. This can be done use the append module method. This takes a key (string) and a value (object or closure). 
 
@@ -202,6 +225,25 @@ $app->get("/users", function(Request $request) {
   if(!validateToken($request->httpAuthorization))
     throw new UnauthorizedException("User is not logged in");
 }); 
+```
+
+## OPTIMIZING THE APP 
+Once done with developing you app. You can add this script and config option to you composer.json file to optimize the composer autoloader. **Note using the build command during development can cause issues!**
+
+```json
+"scripts": {
+        "start": [
+            "Composer\\Config::disableProcessTimeout",
+            "php -S localhost:9000 -t ./"
+        ],
+        "build": [
+            "composer update --optimize-autoloader",
+            "composer dump-autoload --optimize"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
 ```
 
 ## Suggested packages to use with this framework
